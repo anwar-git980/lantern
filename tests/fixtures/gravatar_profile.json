@@ -1,0 +1,36 @@
+{
+  "entry": [
+    {
+      "hash": "205e460b479e2e5b48aec07710c08d50",
+      "requestHash": "205e460b479e2e5b48aec07710c08d50",
+      "profileUrl": "https://gravatar.com/testuser",
+      "preferredUsername": "testuser",
+      "thumbnailUrl": "https://0.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
+      "displayName": "Test User",
+      "accounts": [
+        {
+          "domain": "github.com",
+          "display": "testuser",
+          "url": "https://github.com/testuser",
+          "username": "testuser",
+          "verified": true,
+          "shortname": "github"
+        },
+        {
+          "domain": "twitter.com",
+          "display": "@testuser",
+          "url": "https://twitter.com/testuser",
+          "username": "testuser",
+          "verified": true,
+          "shortname": "twitter"
+        }
+      ],
+      "urls": [
+        {
+          "title": "My Blog",
+          "value": "https://example.org/blog"
+        }
+      ]
+    }
+  ]
+}

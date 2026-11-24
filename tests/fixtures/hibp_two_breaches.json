@@ -1,0 +1,34 @@
+[
+  {
+    "Name": "Adobe",
+    "Title": "Adobe",
+    "Domain": "adobe.com",
+    "BreachDate": "2013-10-04",
+    "AddedDate": "2013-12-04T00:00:00Z",
+    "PwnCount": 152445165,
+    "Description": "In October 2013, 153 million Adobe accounts were breached.",
+    "DataClasses": ["Email addresses", "Password hints", "Passwords", "Usernames"],
+    "IsVerified": true,
+    "IsSensitive": false,
+    "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/Adobe.png",
+    "PasswordHash": "SHOULD-NEVER-REACH-A-FINDING",
+    "Passwords": ["SHOULD-NEVER-REACH-A-FINDING"],
+    "RawDumpExcerpt": "SHOULD-NEVER-REACH-A-FINDING"
+  },
+  {
+    "Name": "LinkedIn",
+    "Title": "LinkedIn",
+    "Domain": "linkedin.com",
+    "BreachDate": "2012-05-05",
+    "AddedDate": "2016-05-21T21:35:40Z",
+    "PwnCount": 164611595,
+    "Description": "In May 2016, LinkedIn had 164 million email addresses and passwords exposed.",
+    "DataClasses": ["Email addresses", "Passwords"],
+    "IsVerified": true,
+    "IsSensitive": false,
+    "LogoPath": "https://haveibeenpwned.com/Content/Images/PwnedLogos/LinkedIn.png",
+    "PasswordHash": "SHOULD-NEVER-REACH-A-FINDING",
+    "Passwords": ["SHOULD-NEVER-REACH-A-FINDING"],
+    "RawDumpExcerpt": "SHOULD-NEVER-REACH-A-FINDING"
+  }
+]
