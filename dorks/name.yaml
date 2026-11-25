@@ -1,0 +1,26 @@
+# Search dorks for a person-name seed. {value} is the name with whitespace collapsed.
+# A name is the weakest seed here: expect namesakes and verify before you believe a hit.
+- id: name_exact
+  query: '"{value}"'
+  description: Exact mentions of the full name
+
+- id: name_linkedin
+  query: '"{value}" site:linkedin.com/in'
+  description: Public LinkedIn profile pages as the search engine already indexed them.
+    Lantern never fetches LinkedIn itself, which would need a logged-in session.
+
+- id: name_docs
+  query: '"{value}" (filetype:pdf OR filetype:docx OR filetype:pptx)'
+  description: Name inside published documents, papers and slide decks
+
+- id: name_org
+  query: '"{value}" (intitle:team OR intitle:staff OR intitle:"about us" OR inurl:author)'
+  description: Staff, team and author pages naming the person
+
+- id: name_writing
+  query: '"{value}" (site:medium.com OR site:substack.com OR site:github.io)'
+  description: Articles and personal sites published under the name
+
+- id: name_records
+  query: '"{value}" (site:gov OR site:edu) -site:linkedin.com'
+  description: Public institutional records and directories

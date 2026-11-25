@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 import sys
 import time
 from pathlib import Path
@@ -12,7 +13,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from osint_agent.core.models import ModuleResult, Seed, SeedType
+from osint_agent.core import http
+from osint_agent.core.models import ModuleResult, Seed, SeedType, looks_like_hostname
 from osint_agent.core.runner import investigate
 
 NOTICE = "Use only on targets you're authorized to investigate. See ACCEPTABLE_USE.md."
@@ -32,20 +34,45 @@ def main() -> None:
     # Present so Typer keeps `run` as a subcommand instead of collapsing it to the root.
 
 
-def _seed_from_options(email: str | None, username: str | None, phone: str | None) -> Seed:
+def _seed_from_options(
+    email: str | None,
+    username: str | None,
+    phone: str | None,
+    domain: str | None,
+    name: str | None,
+) -> Seed:
     provided = {
         SeedType.email: email,
         SeedType.username: username,
         SeedType.phone: phone,
+        SeedType.domain: domain,
+        SeedType.name: name,
     }
     given = {seed_type: value for seed_type, value in provided.items() if value}
 
     if len(given) != 1:
-        console.print("[red]Provide exactly one of --email, --username or --phone.[/red]")
+        console.print(
+            "[red]Provide exactly one of --email, --username, --phone, --domain or --name.[/red]"
+        )
         raise typer.Exit(code=2)
 
     seed_type, value = next(iter(given.items()))
-    return Seed(type=seed_type, value=value)
+    seed = Seed(type=seed_type, value=value)
+
+    if seed_type is SeedType.domain and not looks_like_hostname(seed.normalized):
+        console.print(f"[red]{value!r} does not look like a domain name.[/red]")
+        raise typer.Exit(code=2)
+    return seed
+
+
+def _log_http_to_stderr() -> None:
+    # Our own HTTP logger only: third-party debug output would bury the findings.
+    logger = logging.getLogger("osint_agent.http")
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
 
 
 def _render(result: ModuleResult, verbose: bool) -> None:
@@ -87,14 +114,23 @@ def run(
     email: str = typer.Option(None, "--email", help="Email address to investigate."),
     username: str = typer.Option(None, "--username", help="Username to investigate."),
     phone: str = typer.Option(None, "--phone", help="Phone number to investigate."),
+    domain: str = typer.Option(None, "--domain", help="Domain name to investigate."),
+    name: str = typer.Option(None, "--name", help="Person name to investigate."),
     json_path: Path = typer.Option(None, "--json", help="Write full results to this JSON file."),
     verbose: bool = typer.Option(False, "--verbose", help="Show raw payloads and full values."),
+    no_cache: bool = typer.Option(
+        False, "--no-cache", help="Ignore cached responses. Fresh ones are still cached."
+    ),
 ) -> None:
     """Run every module that supports the given seed."""
     load_dotenv()
+    if verbose:
+        _log_http_to_stderr()
+    if no_cache:
+        http.read_cache = False
     console.print(f"[dim]{NOTICE}[/dim]\n")
 
-    seed = _seed_from_options(email, username, phone)
+    seed = _seed_from_options(email, username, phone, domain, name)
     console.print(f"[bold]seed:[/bold] {seed.type} = {seed.normalized}\n")
 
     started = time.perf_counter()

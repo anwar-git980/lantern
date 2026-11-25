@@ -1,5 +1,6 @@
 """Core data model shared by every module."""
 
+import re
 from datetime import UTC, datetime
 from enum import StrEnum
 
@@ -7,6 +8,9 @@ import phonenumbers
 from pydantic import BaseModel, Field
 
 DEFAULT_REGION = "MY"
+# One or more dot-separated labels ending in a letters-only TLD. Deliberately loose: it rejects
+# typos and free text, not unusual-but-real hostnames.
+HOSTNAME_RE = re.compile(r"^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$")
 
 
 class SeedType(StrEnum):
@@ -36,7 +40,16 @@ class Seed(BaseModel):
             except phonenumbers.NumberParseException:
                 return raw
             return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+        if self.type is SeedType.domain:
+            host = raw.lower().split("://")[-1].split("/")[0].split(":")[0]
+            return host.removeprefix("www.").strip(".")
+        if self.type is SeedType.name:
+            return " ".join(raw.split())
         return raw
+
+
+def looks_like_hostname(value: str) -> bool:
+    return bool(HOSTNAME_RE.match(value))
 
 
 class Finding(BaseModel):

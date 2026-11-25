@@ -1,0 +1,24 @@
+# Search dorks for an email seed. {value} is the normalized (lowercased) address.
+- id: email_exact
+  query: '"{value}"'
+  description: Exact mentions of the address anywhere indexed
+
+- id: email_paste
+  query: '"{value}" (site:pastebin.com OR site:ghostbin.co OR site:rentry.co OR site:controlc.com)'
+  description: Mentions on paste sites, where credential dumps surface
+
+- id: email_code
+  query: '"{value}" (site:github.com OR site:gitlab.com OR site:bitbucket.org)'
+  description: Address committed into source code, configs or issue threads
+
+- id: email_docs
+  query: '"{value}" (filetype:pdf OR filetype:xlsx OR filetype:docx OR filetype:csv)'
+  description: Address inside published documents and spreadsheets
+
+- id: email_forums
+  query: '"{value}" (site:reddit.com OR site:stackoverflow.com OR site:disqus.com)'
+  description: Forum and Q&A posts tied to the address
+
+- id: email_lists
+  query: '"{value}" (inurl:mailman OR inurl:pipermail OR inurl:listinfo)'
+  description: Public mailing list archives

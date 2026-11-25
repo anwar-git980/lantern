@@ -1,0 +1,25 @@
+# Search dorks for a phone seed. {value} is E.164 (+60123456789);
+# {national} is the local format for the number region (012-345 6789).
+- id: phone_e164
+  query: '"{value}"'
+  description: Exact mentions in international format
+
+- id: phone_national
+  query: '"{national}"'
+  description: Exact mentions in local format, which is how people usually write it
+
+- id: phone_paste
+  query: '("{value}" OR "{national}") (site:pastebin.com OR site:rentry.co OR site:ghostbin.co)'
+  description: Mentions on paste sites, where scraped contact lists surface
+
+- id: phone_classifieds
+  query: '("{value}" OR "{national}") (site:olx.com OR site:craigslist.org OR site:mudah.my OR site:carousell.com)'
+  description: Classified and marketplace listings carrying the number
+
+- id: phone_docs
+  query: '("{value}" OR "{national}") (filetype:pdf OR filetype:xlsx OR filetype:csv)'
+  description: Directories, invoices and contact sheets in published files
+
+- id: phone_business
+  query: '"{national}" (intitle:contact OR intitle:"about us" OR inurl:contact)'
+  description: Business contact pages listing the number

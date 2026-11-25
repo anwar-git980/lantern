@@ -8,7 +8,7 @@ import httpx
 from osint_agent.core.models import ModuleResult, Seed
 
 CLIENT_TIMEOUT = 15.0
-USER_AGENT = "osint-agent/0.1"
+USER_AGENT = "lantern/0.2 (+https://github.com/anwar-git980/lantern)"
 
 
 async def _run_module(module, seed: Seed, client: httpx.AsyncClient) -> ModuleResult:

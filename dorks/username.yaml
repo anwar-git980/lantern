@@ -1,0 +1,24 @@
+# Search dorks for a username seed. {value} is the handle with any leading @ stripped.
+- id: username_exact
+  query: '"{value}"'
+  description: Exact mentions of the handle
+
+- id: username_inurl
+  query: 'inurl:{value}'
+  description: Profile and user pages whose URL contains the handle
+
+- id: username_code
+  query: '"{value}" (site:github.com OR site:gitlab.com OR site:bitbucket.org)'
+  description: Code hosting accounts, commits and issue comments
+
+- id: username_forums
+  query: '"{value}" (site:reddit.com OR site:news.ycombinator.com OR site:stackoverflow.com)'
+  description: Forum and community activity under the handle
+
+- id: username_profiles
+  query: '"{value}" (intitle:profile OR intitle:"user profile" OR intitle:member)'
+  description: Pages that present themselves as a profile for the handle
+
+- id: username_docs
+  query: '"{value}" (filetype:pdf OR filetype:txt OR filetype:csv)'
+  description: Handle appearing inside published files, including leaked lists

@@ -16,6 +16,7 @@ import dns.asyncresolver
 import dns.resolver
 import httpx
 
+from osint_agent.core.http import fetch_json
 from osint_agent.core.models import Finding, ModuleResult, Seed
 
 NAME = "email"
@@ -26,6 +27,8 @@ HIBP_SOURCE = "https://haveibeenpwned.com/"
 # Deliberately metadata-only: no password, hash or dump content is ever read or stored.
 HIBP_RAW_KEYS = ("BreachDate", "DataClasses", "PwnCount", "Domain")
 GRAVATAR_URL = "https://gravatar.com/{digest}.json"
+HIBP_TTL = 21600.0  # 6h: a re-audit should pick up a newly disclosed breach the same day
+GRAVATAR_TTL = 86400.0
 MX_SERVER_TIMEOUT = 2.0
 MX_TOTAL_TIMEOUT = 15.0
 HOLEHE_CLIENT_TIMEOUT = 10.0
@@ -95,25 +98,19 @@ async def _check_hibp(email: str, client: httpx.AsyncClient) -> tuple[list[Findi
         return [], ["HIBP_API_KEY not set - breach check skipped"]
 
     url = HIBP_URL.format(email=quote(email, safe=""))
-    headers = {"hibp-api-key": api_key, "user-agent": "osint-agent"}
+    # The key rides in a header, so it reaches neither the cache key nor the cache file.
+    headers = {"hibp-api-key": api_key, "user-agent": "lantern"}
     params = {"truncateResponse": "false"}
 
-    response = await client.get(url, headers=headers, params=params)
-    if response.status_code == 429:
-        retry_after = response.headers.get("retry-after", "2")
-        try:
-            delay = min(float(retry_after), 30.0)
-        except ValueError:
-            delay = 2.0
-        await asyncio.sleep(delay)
-        response = await client.get(url, headers=headers, params=params)
+    # The shared layer spaces requests per host and retries a 429 once, honouring retry-after.
+    status, data = await fetch_json(client, url, headers=headers, params=params, ttl=HIBP_TTL)
 
-    if response.status_code == 404:
+    if status == 404:
         return [], []  # not breached: a clean negative, not an error
-    if response.status_code == 429:
+    if status == 429:
         return [], ["HIBP rate limited after one retry - breach check incomplete"]
-    if response.status_code != 200:
-        return [], [f"HIBP returned HTTP {response.status_code}"]
+    if status != 200 or not isinstance(data, list):
+        return [], [f"HIBP returned HTTP {status}"]
 
     findings = [
         _finding(
@@ -123,7 +120,7 @@ async def _check_hibp(email: str, client: httpx.AsyncClient) -> tuple[list[Findi
             url=HIBP_SOURCE,
             **{key: breach.get(key) for key in HIBP_RAW_KEYS},
         )
-        for breach in response.json()
+        for breach in data
     ]
     return findings, []
 
@@ -133,19 +130,18 @@ async def _check_gravatar(email: str, client: httpx.AsyncClient) -> tuple[list[F
     url = GRAVATAR_URL.format(digest=digest)
 
     try:
-        response = await client.get(url)
+        status, data = await fetch_json(client, url, ttl=GRAVATAR_TTL)
     except Exception as exc:
         return [], [f"Gravatar lookup failed: {type(exc).__name__}: {exc}"]
 
-    if response.status_code == 404:
+    if status == 404:
         return [], []
-    if response.status_code != 200:
-        return [], [f"Gravatar returned HTTP {response.status_code}"]
-
-    try:
-        entries = response.json().get("entry") or []
-    except ValueError:
+    if status != 200:
+        return [], [f"Gravatar returned HTTP {status}"]
+    if not isinstance(data, dict):
         return [], ["Gravatar returned a non-JSON body"]
+
+    entries = data.get("entry") or []
     if not entries:
         return [], []
 

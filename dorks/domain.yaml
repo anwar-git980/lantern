@@ -1,0 +1,28 @@
+# Search dorks for a domain seed. {value} is the bare hostname, lowercased, without www.
+- id: domain_documents
+  query: 'site:{value} (filetype:pdf OR filetype:xlsx OR filetype:docx OR filetype:pptx)'
+  description: Published documents on the domain, often with metadata and internal names
+
+- id: domain_data_files
+  query: 'site:{value} (filetype:sql OR filetype:env OR filetype:log OR filetype:bak OR filetype:config)'
+  description: Exposed data, backup and configuration files
+
+- id: domain_admin
+  query: 'site:{value} (inurl:admin OR inurl:login OR inurl:dashboard OR inurl:portal)'
+  description: Administrative and authentication entry points
+
+- id: domain_subdomains
+  query: 'site:*.{value} -site:www.{value}'
+  description: Indexed subdomains other than the main site
+
+- id: domain_directory_listing
+  query: 'site:{value} intitle:"index of"'
+  description: Open directory listings
+
+- id: domain_paste
+  query: '"{value}" (site:pastebin.com OR site:rentry.co OR site:ghostbin.co)'
+  description: Domain mentioned on paste sites, a common place for leaked config
+
+- id: domain_code
+  query: 'site:github.com "{value}"'
+  description: Domain referenced in public code, often in configs and CI files
