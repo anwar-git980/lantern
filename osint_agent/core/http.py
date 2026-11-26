@@ -18,6 +18,9 @@ DEFAULT_TTL = 86400.0
 # --no-cache clears this. Writes continue regardless, so the next run still benefits.
 read_cache = True
 
+# Per-process counters the agent summary reports. Reset between runs by the CLI.
+stats = {"fetches": 0, "cache_hits": 0}
+
 
 def _retry_delay(response: httpx.Response) -> float:
     try:
@@ -52,6 +55,7 @@ async def fetch_json(
     if cache and read_cache:
         hit = response_cache.get(key)
         if hit is not None:
+            stats["cache_hits"] += 1
             logger.debug("cache hit  %s", url)
             return hit[0], _parse(hit[1])
 
@@ -59,6 +63,7 @@ async def fetch_json(
     if timeout is not None:
         request_args["timeout"] = timeout
 
+    stats["fetches"] += 1
     await ratelimit.acquire(ratelimit.host_of(url))
     logger.debug("fetch      %s", url)
     response = await client.get(url, **request_args)
@@ -71,3 +76,38 @@ async def fetch_json(
     if cache:
         response_cache.put(key, response.status_code, response.text, ttl)
     return response.status_code, _parse(response.text)
+
+
+async def fetch_bytes(
+    client: httpx.AsyncClient,
+    url: str,
+    *,
+    max_bytes: int,
+    timeout: float | None = None,
+) -> bytes | None:
+    """GET url as raw bytes, or None on a non-200 or an over-sized body.
+
+    Streamed and capped, so a URL that turns out to serve a large file costs one chunk rather
+    than a download. Deliberately not cached: the cache body column is TEXT, and an avatar is
+    not worth a second table. Per-host spacing still applies, so correlating 20 profiles
+    cannot stampede one host.
+    """
+    request_args: dict[str, Any] = {}
+    if timeout is not None:
+        request_args["timeout"] = timeout
+
+    stats["fetches"] += 1
+    await ratelimit.acquire(ratelimit.host_of(url))
+    logger.debug("fetch raw  %s", url)
+    async with client.stream("GET", url, **request_args) as response:
+        if response.status_code != 200:
+            return None
+        declared = response.headers.get("content-length", "")
+        if declared.isdigit() and int(declared) > max_bytes:
+            return None
+        body = bytearray()
+        async for chunk in response.aiter_bytes():
+            body.extend(chunk)
+            if len(body) > max_bytes:
+                return None
+        return bytes(body)

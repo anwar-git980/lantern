@@ -21,6 +21,10 @@ dependencies = [
     "pyyaml",
     "holehe",
     "maigret",
+    "anthropic",
+    "networkx",
+    "imagehash",
+    "pillow",
 ]
 
 [project.optional-dependencies]

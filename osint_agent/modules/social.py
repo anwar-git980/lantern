@@ -22,6 +22,7 @@ SUPPORTS = {"username"}
 GITHUB_URL = "https://api.github.com/users/{username}"
 GITHUB_FIELDS = (
     "name",
+    "avatar_url",
     "bio",
     "blog",
     "location",
@@ -160,6 +161,7 @@ async def _check_reddit(
             total_karma=profile.get("total_karma"),
             created=_epoch_day(profile.get("created_utc")),
             verified=profile.get("verified"),
+            icon_img=profile.get("icon_img"),
         )
     ]
     findings += _links_from(
@@ -191,6 +193,7 @@ async def _check_bluesky(
             0.6,
             url=f"https://bsky.app/profile/{handle}",
             display_name=data.get("displayName"),
+            avatar=data.get("avatar"),
             description=data.get("description"),
             followers=data.get("followersCount"),
             follows=data.get("followsCount"),
