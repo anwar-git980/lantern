@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-11-26T06:18:23.088Z",
+  "projectRoot": "E:\\Personal Project\\OSINT-Agent",
+  "structure": {
+    "hasPackageJson": false,
+    "hasTsConfig": false,
+    "hasClaudeConfig": true,
+    "hasClaudeFlow": true
+  },
+  "scannedAt": 1795673903089
+}

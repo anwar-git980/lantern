@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-11-26T05:43:23.034Z",
+  "backedUp": true,
+  "backups": [
+    {
+      "backedUp": true,
+      "path": "E:\\Personal Project\\OSINT-Agent\\.swarm\\backups\\memory-2026-11-26T05-43-23-022Z.db",
+      "sizeBytes": 172032,
+      "rotatedAway": [],
+      "method": "native-online-backup",
+      "dbPath": "E:\\Personal Project\\OSINT-Agent\\.swarm\\memory.db"
+    },
+    {
+      "backedUp": false,
+      "skipped": "no-db",
+      "dbPath": "E:\\Personal Project\\OSINT-Agent\\.swarm\\agentdb-memory.db"
+    }
+  ],
+  "path": "E:\\Personal Project\\OSINT-Agent\\.swarm\\backups\\memory-2026-11-26T05-43-23-022Z.db",
+  "sizeBytes": 172032,
+  "rotatedAway": 0,
+  "method": "native-online-backup"
+}
